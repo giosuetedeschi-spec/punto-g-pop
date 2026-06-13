@@ -77,19 +77,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Punto G — Gastronomia e Pastificio Senza Glutine a Torino" },
+      {
+        name: "description",
+        content:
+          "Punto G: gastronomia, rosticceria, pasticceria e pastificio 100% senza glutine a Torino. Prenota i tuoi prodotti artigianali. Convenzione ASL.",
+      },
+      { name: "author", content: "Punto G" },
+      { property: "og:title", content: "Punto G — Senza Glutine a Torino" },
+      {
+        property: "og:description",
+        content:
+          "Gastronomia e pastificio artigianale 100% senza glutine in Piazza Montanari 143/B, Torino. Prenota online. Convenzione ASL.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      {
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
+        crossOrigin: "anonymous",
+      },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&display=swap",
       },
     ],
   }),
