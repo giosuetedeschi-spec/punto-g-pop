@@ -6,6 +6,8 @@ const links = [
   { href: "#filosofia", label: "Chi siamo" },
   { href: "#prenota", label: "Prenota" },
   { href: "#asl", label: "Convenzione ASL" },
+  { href: "#recensioni", label: "Recensioni" },
+  { href: "#faq", label: "FAQ" },
   { href: "#dove", label: "Dove siamo" },
 ];
 

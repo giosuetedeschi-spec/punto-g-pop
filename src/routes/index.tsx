@@ -5,6 +5,8 @@ import { Hero } from "@/components/Hero";
 import { Philosophy } from "@/components/Philosophy";
 import { Reservation } from "@/components/Reservation";
 import { AslSection } from "@/components/AslSection";
+import { Reviews } from "@/components/Reviews";
+import { Faq } from "@/components/Faq";
 import { MapSection } from "@/components/MapSection";
 import { Footer } from "@/components/Footer";
 
@@ -37,6 +39,8 @@ function Index() {
         <Philosophy />
         <Reservation />
         <AslSection />
+        <Reviews />
+        <Faq />
         <MapSection />
       </main>
       <Footer />

@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   Trash2,
   CalendarDays,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import rosticceriaImg from "@/assets/rosticceria.jpg";
 import pasticceriaImg from "@/assets/pasticceria.jpg";
 import pastificioImg from "@/assets/pastificio.jpg";
+import { supabase } from "@/lib/supabase";
 
 type Category = {
   id: string;
@@ -79,6 +81,7 @@ const reservationSchema = z.object({
     .min(6, "Inserisci un telefono valido")
     .max(20)
     .regex(/^[0-9+()\s-]+$/, "Telefono non valido"),
+  email: z.string().trim().email("Email non valida").optional().or(z.literal("")),
   data: z.string().min(1, "Scegli una data di ritiro"),
   note: z.string().max(500).optional(),
 });
@@ -87,7 +90,8 @@ export function Reservation() {
   const [active, setActive] = useState<string>("rosticceria");
   const [cart, setCart] = useState<Record<string, number>>({});
   const [custom, setCustom] = useState("");
-  const [form, setForm] = useState({ nome: "", telefono: "", data: "", note: "" });
+  const [form, setForm] = useState({ nome: "", telefono: "", email: "", data: "", note: "" });
+  const [submitting, setSubmitting] = useState(false);
 
   const isCustom = active === "commissione";
   const currentCategory = categories.find((c) => c.id === active);
@@ -115,7 +119,7 @@ export function Reservation() {
   );
   const totalItems = cartItems.reduce((s, [, q]) => s + q, 0);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = reservationSchema.safeParse(form);
     if (!parsed.success) {
@@ -127,12 +131,37 @@ export function Reservation() {
       return;
     }
 
-    toast.success(`Grazie ${parsed.data.nome}! Prenotazione ricevuta`, {
-      description: `Ti contatteremo allo ${parsed.data.telefono} per confermare il ritiro del ${parsed.data.data}.`,
-    });
-    setCart({});
-    setCustom("");
-    setForm({ nome: "", telefono: "", data: "", note: "" });
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("reservations").insert({
+        nome: parsed.data.nome,
+        telefono: parsed.data.telefono,
+        email: parsed.data.email || null,
+        data_ritiro: parsed.data.data,
+        items: cart,
+        custom_request: custom.trim() || null,
+        note: parsed.data.note || null,
+        status: "pending",
+      });
+
+      if (error) {
+        console.error("Supabase error:", error);
+        toast.error("Errore nell'invio. Riprova o chiamaci al telefono.");
+        return;
+      }
+
+      toast.success(`Grazie ${parsed.data.nome}! Prenotazione ricevuta`, {
+        description: `Ti contatteremo al più presto per confermare il ritiro del ${parsed.data.data}.`,
+      });
+      setCart({});
+      setCustom("");
+      setForm({ nome: "", telefono: "", email: "", data: "", note: "" });
+    } catch (err) {
+      console.error("Submit error:", err);
+      toast.error("Errore di connessione. Riprova più tardi.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -293,7 +322,7 @@ export function Reservation() {
 
           <form onSubmit={handleSubmit} className="mt-5 space-y-3">
             <div>
-              <Label htmlFor="nome">Nome</Label>
+              <Label htmlFor="nome">Nome *</Label>
               <Input
                 id="nome"
                 value={form.nome}
@@ -304,7 +333,7 @@ export function Reservation() {
               />
             </div>
             <div>
-              <Label htmlFor="telefono">Telefono</Label>
+              <Label htmlFor="telefono">Telefono *</Label>
               <Input
                 id="telefono"
                 value={form.telefono}
@@ -315,7 +344,21 @@ export function Reservation() {
               />
             </div>
             <div>
-              <Label htmlFor="data">Data di ritiro</Label>
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail size={16} className="pointer-events-none absolute left-3 top-1/2 mt-0.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="mt-1 rounded-xl border-[3px] border-ink pl-9"
+                  placeholder="La tua email (opzionale)"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="data">Data di ritiro *</Label>
               <div className="relative">
                 <CalendarDays
                   size={18}
@@ -341,8 +384,8 @@ export function Reservation() {
                 placeholder="Allergie, orario preferito..."
               />
             </div>
-            <Button type="submit" variant="pop" size="lg" className="w-full">
-              Invia prenotazione
+            <Button type="submit" variant="pop" size="lg" className="w-full" disabled={submitting}>
+              {submitting ? "Invio in corso..." : "Invia prenotazione"}
             </Button>
           </form>
         </div>
